@@ -23,17 +23,12 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.bgTop,
+      // Bundled Lexend as the default family; inline/AppType styles inherit it.
+      fontFamily: kFontFamily,
       // Ensures interactive widgets honour the >=56dp tap target (A11y).
       materialTapTargetSize: MaterialTapTargetSize.padded,
       visualDensity: VisualDensity.standard,
       splashFactory: InkRipple.splashFactory,
-      textTheme: const TextTheme(
-        displayLarge: AppType.display,
-        headlineLarge: AppType.h1,
-        headlineSmall: AppType.h2,
-        bodyLarge: AppType.body,
-        labelLarge: AppType.label,
-      ),
       iconTheme: const IconThemeData(color: AppColors.ink, size: 26),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.card,

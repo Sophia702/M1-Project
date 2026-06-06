@@ -117,13 +117,19 @@ class AppShadows {
   ];
 }
 
-/// Type scale. Min body ~18sp for low-vision / older-adult readability
-/// (WCAG 2.2 §1.4.4; large type recommended by Parkinson's UI guidance,
-/// Nunes et al. Springer 10.1007/s10209-015-0440-1).
+/// Type scale — Lexend (chosen for reading-proficiency / accessibility),
+/// BUNDLED in assets/fonts so it never depends on a network fetch. Min body
+/// ~18sp for low-vision / older-adult readability (WCAG 2.2 §1.4.4; large type
+/// recommended by Parkinson's UI guidance, Nunes et al. Springer
+/// 10.1007/s10209-015-0440-1). To change typeface: swap [kFontFamily] + the
+/// pubspec font entry.
+const String kFontFamily = 'Lexend';
+
 class AppType {
   AppType._();
 
   static const TextStyle display = TextStyle(
+    fontFamily: kFontFamily,
     fontSize: 56,
     fontWeight: FontWeight.w800,
     color: AppColors.ink,
@@ -131,29 +137,34 @@ class AppType {
     letterSpacing: -1.5,
   );
   static const TextStyle h1 = TextStyle(
+    fontFamily: kFontFamily,
     fontSize: 30,
     fontWeight: FontWeight.w700,
     color: AppColors.ink,
     letterSpacing: -0.5,
   );
   static const TextStyle h2 = TextStyle(
+    fontFamily: kFontFamily,
     fontSize: 23,
     fontWeight: FontWeight.w700,
     color: AppColors.ink,
   );
   static const TextStyle body = TextStyle(
+    fontFamily: kFontFamily,
     fontSize: 18,
     fontWeight: FontWeight.w500,
     color: AppColors.inkSoft,
     height: 1.35,
   );
   static const TextStyle label = TextStyle(
+    fontFamily: kFontFamily,
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.label,
     letterSpacing: 0.3,
   );
   static const TextStyle button = TextStyle(
+    fontFamily: kFontFamily,
     fontSize: 19,
     fontWeight: FontWeight.w700,
     color: Colors.white,

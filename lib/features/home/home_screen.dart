@@ -46,17 +46,17 @@ class HomeScreen extends ConsumerWidget {
                   onTap: () => startWalk(context, ref),
                   child: PulseRing(
                     color: AppColors.primary,
-                    size: 212,
+                    size: 268,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
                         Icon(Icons.directions_walk,
-                            color: Colors.white, size: 42),
-                        SizedBox(height: 6),
+                            color: Colors.white, size: 54),
+                        SizedBox(height: 8),
                         Text('Start walk',
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 19,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w700)),
                       ],
                     ),
