@@ -19,6 +19,16 @@ import '../services/voice/voice_assistant.dart';
 /// widget tree. Wired to MaterialApp.navigatorKey.
 final navigatorKey = GlobalKey<NavigatorState>();
 
+/// App locale — driven by the Settings Language toggle.
+class LocaleNotifier extends Notifier<Locale> {
+  @override
+  Locale build() => const Locale('en');
+  void set(Locale locale) => state = locale;
+}
+
+final localeProvider =
+    NotifierProvider<LocaleNotifier, Locale>(LocaleNotifier.new);
+
 /// Set true to use the mic-free MockVoiceAssistant (e.g. on an emulator).
 const bool kUseMockVoice = false;
 

@@ -1,50 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Central design tokens for aria.
 ///
-/// EVERYTHING tunable about the look lives here. Premium, calm, minimal — a
-/// soft neutral-sage background, white cards that lift off the page, a deep
-/// forest-green primary with a plum secondary, and sage / rose / gold accents
-/// for variety. Light mode only.
+/// Refined palette: flat warm paper backgrounds, deep forest-green primary,
+/// burgundy accent for speech-assist/help pops only. Newsreader italic for
+/// display/hero moments; Lexend for all other text.
 class AppColors {
   AppColors._();
 
-  // Page background — soft neutral paper with a faint sage warmth.
-  static const Color bgTop = Color(0xFFF4F3ED);
-  static const Color bgBottom = Color(0xFFE8EBE1);
+  // Page background — flat warm paper.
+  static const Color bgTop    = Color(0xFFF4F2EC);
+  static const Color bgBottom = Color(0xFFECE9E1);
 
-  // Text (deep green-charcoal through muted sage-greys).
-  static const Color ink = Color(0xFF26312B); // primary text, active nav
-  static const Color inkSoft = Color(0xFF5C6A61); // body / muted text
-  static const Color label = Color(0xFF97A096); // small labels
+  // Primary — deep forest green.
+  static const Color primary     = Color(0xFF164D3C);
+  static const Color primaryDeep = Color(0xFF0E392C);
 
-  // Primary accent — deep forest green.
-  static const Color primary = Color(0xFF2F5D4A);
-  static const Color primaryDeep = Color(0xFF234A3B);
+  // FAB / action circles.
+  static const Color fab     = Color(0xFF1F5C49);
+  static const Color fabSoft = Color(0xFF6E978A);
 
-  // Secondary accent — plum.
-  static const Color plum = Color(0xFF6E4C66);
-  static const Color plumDeep = Color(0xFF553B4F);
+  // Accent — deep burgundy (speech assist, help button, freeze chip ONLY).
+  static const Color accent     = Color(0xFF8E3E48);
+  static const Color accentSoft = Color(0xFFEEE0DF);
 
-  // Extra soft accents (stat cards, variety).
-  static const Color sage = Color(0xFF7BA38C);
-  static const Color rose = Color(0xFFC68793);
-  static const Color amber = Color(0xFFC99A4A); // warm gold
-  static const Color sky = Color(0xFF6E90B0);
+  // Text.
+  static const Color ink      = Color(0xFF171B17);
+  static const Color inkSoft  = Color(0xFF565C55);
+  static const Color inkFaint = Color(0xFF9A9A8F);
 
-  // Cards + surfaces.
-  static const Color card = Color(0xFFFFFFFF);
-  static const Color surface = Color(0xFFECEEE6); // sage-tinted chip
-  static const Color surfaceDeep = Color(0xFFDBE0D5);
+  // Surfaces.
+  static const Color card        = Color(0xFFFFFFFF);
+  static const Color field       = Color(0xFFEBE9E1);
+  static const Color surface     = Color(0xFFEFE8DE);
+  static const Color surfaceDeep = Color(0xFFE2D9CC);
+  static const Color line        = Color(0xFFE5E2D9); // hairline borders
 
-  // Status — always paired with an icon + label (colour is never the only cue).
-  static const Color connected = Color(0xFF4E9E78); // green
-  static const Color notConnected = Color(0xFFC65B4E); // red
-  static const Color cue = Color(0xFFC99A4A); // gold — cue / pre-freeze
+  // Status — always paired with icon + label.
+  static const Color connected    = Color(0xFF4E9A57);
+  static const Color notConnected = Color(0xFFB04040);
+  static const Color cue          = Color(0xFF7E6320); // amber — pre-freeze
 
-  // Soft wash for the live walking screen.
-  static const Color walkingWashTop = Color(0xFFEFF2EA);
-  static const Color walkingWashBottom = Color(0xFFE2E9DC);
+  // Clay — streak chips, stat cards secondary accent.
+  static const Color clay     = Color(0xFF7E6346);
+  static const Color claySoft = Color(0xFFE7E1D5);
+
+  // Flat soft tints — icon tiles, chips, hairline dividers.
+  static const Color primarySoft = Color(0xFFE2EAE4); // soft green tile behind primary icons
+  static const Color surfaceSunk  = Color(0xFFFAF9F5); // selected/recessed card fill
+  static const Color lineSoft     = Color(0xFFEEEBE3); // in-card hairline divider
+  static const Color okSoft       = Color(0xFFE2EAE4); // green status pill bg
+  static const Color warnSoft     = Color(0xFFECE6D6); // amber status pill bg
+  static const Color chipBg       = Color(0xFFEDEAE1); // neutral chip bg
+
+  // Walking screen radial gradient (speech-assist mode only).
+  static const LinearGradient walkingWash = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF1B2F28), Color(0xFF0F1C19)],
+  );
 
   static const LinearGradient pageGradient = LinearGradient(
     begin: Alignment.topCenter,
@@ -52,25 +67,27 @@ class AppColors {
     colors: [bgTop, bgBottom],
   );
 
-  /// Primary action gradient (buttons, start ring).
   static const LinearGradient accentGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [primary, primaryDeep],
   );
 
-  /// Secondary gradient (plum accent cards).
-  static const LinearGradient plumGradient = LinearGradient(
+  static const LinearGradient pinkGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [plum, plumDeep],
+    colors: [Color(0xFF7A2D42), Color(0xFF8E3E48)],
   );
 
-  static const LinearGradient walkingWash = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [walkingWashTop, walkingWashBottom],
-  );
+  // Legacy aliases — kept so unedited files compile without changes.
+  static const Color label    = inkFaint;
+  static const Color plum     = accent;
+  static const Color plumDeep = accent;
+  static const Color sage     = fabSoft;
+  static const Color rose     = accent;
+  static const Color amber    = Color(0xFFC99A4A);
+  static const Color sky      = Color(0xFF6E90B0);
+  static const LinearGradient plumGradient = pinkGradient;
 }
 
 class AppRadii {
@@ -98,16 +115,15 @@ class AppSpacing {
 class AppShadows {
   AppShadows._();
 
-  /// White-card lift, soft and warm: 0 8px 22px rgba(38,49,43,.10).
+  /// Minimal warm shadow — used for raised elements like the start button.
   static const List<BoxShadow> card = [
     BoxShadow(
-      color: Color(0x1A26312B),
-      blurRadius: 22,
-      offset: Offset(0, 8),
+      color: Color(0x12553B2A),
+      blurRadius: 12,
+      offset: Offset(0, 4),
     ),
   ];
 
-  /// Stronger lift for the raised start button / floating nav.
   static const List<BoxShadow> raised = [
     BoxShadow(
       color: Color(0x33394A40),
@@ -117,13 +133,13 @@ class AppShadows {
   ];
 }
 
-/// Type scale — Lexend (chosen for reading-proficiency / accessibility),
-/// BUNDLED in assets/fonts so it never depends on a network fetch. Min body
-/// ~18sp for low-vision / older-adult readability (WCAG 2.2 §1.4.4; large type
-/// recommended by Parkinson's UI guidance, Nunes et al. Springer
-/// 10.1007/s10209-015-0440-1). To change typeface: swap [kFontFamily] + the
-/// pubspec font entry.
-const String kFontFamily = 'Lexend';
+/// Type scale.
+///
+/// [kFontFamily] — Lexend, bundled. All body/UI text.
+/// [kSerifFamily] — Newsreader italic (via google_fonts). Display moments only:
+///   app wordmark on landing, session name in summary, quote card text.
+const String kFontFamily   = 'Lexend';
+const String kSerifFamily  = 'Newsreader';
 
 class AppType {
   AppType._();
@@ -136,6 +152,17 @@ class AppType {
     height: 1.0,
     letterSpacing: -1.5,
   );
+
+  /// Newsreader italic — app wordmark, session name, quote text.
+  /// Not const: google_fonts returns a runtime TextStyle.
+  static TextStyle get displaySerif => GoogleFonts.newsreader(
+    fontStyle: FontStyle.italic,
+    fontSize: 42,
+    fontWeight: FontWeight.w500,
+    color: AppColors.ink,
+    height: 1.04,
+  );
+
   static const TextStyle h1 = TextStyle(
     fontFamily: kFontFamily,
     fontSize: 30,
@@ -160,7 +187,7 @@ class AppType {
     fontFamily: kFontFamily,
     fontSize: 14,
     fontWeight: FontWeight.w600,
-    color: AppColors.label,
+    color: AppColors.inkFaint,
     letterSpacing: 0.3,
   );
   static const TextStyle button = TextStyle(

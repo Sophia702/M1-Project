@@ -5,14 +5,14 @@ import '../../core/a11y/a11y.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/persistence/app_prefs.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/providers.dart';
 import '../../services/voice/voice_controller.dart';
+import '../onboarding/onboarding_flow.dart';
+import '../session/connect_sensors_screen.dart';
 
-/// Screen 10 — Settings. Audio preferences, sensor configuration, notifications.
-///
-/// Volume/tempo use +/- STEPPERS rather than sliders: a slider needs a drag,
-/// which the accessibility rules forbid for tremor users (no fine-motor
-/// gestures). Steppers are large, discrete, tap-only targets. (Local state for
-/// now; wired to the cue engine + persistence in a later round.)
+/// Settings. Audio preferences, sensor configuration, notifications,
+/// accessibility, and language selector.
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -21,8 +21,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  int _volume = 80; // percent
-  int _tempo = 108; // bpm
+  int _volume = 80;
+  int _tempo = 108;
   bool _reminders = true;
 
   void _setVoice(bool v) {
@@ -37,42 +37,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = ref.watch(localeProvider);
+    final l10n = AppLocalizations.of(context);
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md,
           AppSpacing.lg, AppSpacing.navClearance),
       children: [
-        Text('Settings', style: AppType.h1),
+        Text(l10n?.settings ?? 'Settings', style: AppType.h1),
         const SizedBox(height: AppSpacing.md),
-        _Section(title: 'Audio preferences', children: [
+        _Section(title: l10n?.audioPrefs ?? 'Audio preferences', children: [
           _VolumeControl(
+            label: l10n?.cueVolume ?? 'Cue volume',
             value: _volume,
             onChanged: (v) => setState(() => _volume = v.clamp(0, 100)),
           ),
           const Divider(height: AppSpacing.lg, color: AppColors.surfaceDeep),
           _StepperRow(
-            label: 'Beat tempo',
+            label: l10n?.beatTempo ?? 'Beat tempo',
             value: '$_tempo bpm',
             onMinus: _tempo > 60 ? () => setState(() => _tempo -= 2) : null,
             onPlus: _tempo < 140 ? () => setState(() => _tempo += 2) : null,
           ),
         ]),
         const SizedBox(height: AppSpacing.md),
-        _Section(title: 'Sensor configuration', children: [
+        _Section(title: l10n?.sensorConfig ?? 'Sensor configuration', children: [
           _RowTile(
             icon: Icons.sensors,
-            title: 'Manage sensors',
+            title: l10n?.manageSensors ?? 'Manage sensors',
             trailing: Text('3 connected',
                 style: AppType.label.copyWith(color: AppColors.connected)),
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Sensor management — coming soon')),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => const ConnectSensorsScreen()),
             ),
           ),
         ]),
         const SizedBox(height: AppSpacing.md),
-        _Section(title: 'Notifications', children: [
+        _Section(title: l10n?.notifications ?? 'Notifications', children: [
           _RowTile(
             icon: Icons.notifications_rounded,
-            title: 'Daily reminders',
+            title: l10n?.dailyReminders ?? 'Daily reminders',
             trailing: Switch(
               value: _reminders,
               activeThumbColor: AppColors.primary,
@@ -82,16 +87,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ]),
         const SizedBox(height: AppSpacing.md),
-        _Section(title: 'Accessibility', children: [
+        _Section(title: l10n?.accessibility ?? 'Accessibility', children: [
           _RowTile(
             icon: Icons.mic_rounded,
-            title: 'Speech assist (hands-free)',
+            title: l10n?.speechAssistHandsFree ?? 'Speech assist (hands-free)',
             trailing: Switch(
               value: ref.watch(voiceControllerProvider).enabled,
               activeThumbColor: AppColors.primary,
               onChanged: (v) => _setVoice(v),
             ),
-            onTap: () => _setVoice(!ref.read(voiceControllerProvider).enabled),
+            onTap: () =>
+                _setVoice(!ref.read(voiceControllerProvider).enabled),
+          ),
+        ]),
+        const SizedBox(height: AppSpacing.md),
+        _Section(title: l10n?.language ?? 'Language', children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                _LangButton(
+                  label: 'English',
+                  locale: const Locale('en'),
+                  currentLocale: currentLocale,
+                  onTap: () =>
+                      ref.read(localeProvider.notifier).set(const Locale('en')),
+                ),
+                const SizedBox(width: 12),
+                _LangButton(
+                  label: 'Français',
+                  locale: const Locale('fr'),
+                  currentLocale: currentLocale,
+                  onTap: () =>
+                      ref.read(localeProvider.notifier).set(const Locale('fr')),
+                ),
+              ],
+            ),
+          ),
+        ]),
+        const SizedBox(height: AppSpacing.md),
+        _Section(title: '🛠  Developer', children: [
+          _RowTile(
+            icon: Icons.replay_rounded,
+            title: 'Restart onboarding',
+            trailing: const Icon(Icons.chevron_right, color: AppColors.inkFaint),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const OnboardingFlow(),
+                fullscreenDialog: true,
+              ),
+            ),
           ),
         ]),
       ],
@@ -121,11 +166,55 @@ class _Section extends StatelessWidget {
   }
 }
 
-/// Volume: a slider PLUS -/+ buttons. The slider is the quick visual control;
-/// the buttons give a tremor-friendly discrete tap path (the slider's drag is
-/// the only gesture we allow, and only because it's backed by the buttons).
+class _LangButton extends StatelessWidget {
+  const _LangButton({
+    required this.label,
+    required this.locale,
+    required this.currentLocale,
+    required this.onTap,
+  });
+  final String label;
+  final Locale locale;
+  final Locale currentLocale;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = currentLocale.languageCode == locale.languageCode;
+    return Expanded(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: 52,
+            decoration: BoxDecoration(
+              color: selected ? AppColors.primary : AppColors.field,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontFamily: kFontFamily,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: selected ? Colors.white : AppColors.ink,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _VolumeControl extends StatelessWidget {
-  const _VolumeControl({required this.value, required this.onChanged});
+  const _VolumeControl(
+      {required this.label, required this.value, required this.onChanged});
+  final String label;
   final int value;
   final ValueChanged<int> onChanged;
 
@@ -136,7 +225,7 @@ class _VolumeControl extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text('Cue volume', style: AppType.h2.copyWith(fontSize: 18)),
+            Text(label, style: AppType.h2.copyWith(fontSize: 18)),
             const Spacer(),
             Text('$value%', style: AppType.label),
           ],
@@ -226,11 +315,14 @@ class _RoundBtn extends StatelessWidget {
             width: A11y.minTapTarget,
             height: A11y.minTapTarget,
             decoration: BoxDecoration(
-              color: enabled ? AppColors.surface : AppColors.surface.withValues(alpha: 0.5),
+              color: enabled
+                  ? AppColors.surface
+                  : AppColors.surface.withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
             child: Icon(icon,
-                color: enabled ? AppColors.ink : AppColors.label, size: 24),
+                color: enabled ? AppColors.ink : AppColors.inkFaint,
+                size: 24),
           ),
         ),
       ),
@@ -261,7 +353,8 @@ class _RowTile extends StatelessWidget {
           children: [
             Icon(icon, color: AppColors.primary, size: 24),
             const SizedBox(width: AppSpacing.md),
-            Expanded(child: Text(title, style: AppType.h2.copyWith(fontSize: 18))),
+            Expanded(
+                child: Text(title, style: AppType.h2.copyWith(fontSize: 18))),
             trailing,
           ],
         ),

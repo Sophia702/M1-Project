@@ -14,5 +14,5 @@ class NoStretchScrollBehavior extends MaterialScrollBehavior {
 
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) =>
-      const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
+      const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
 }

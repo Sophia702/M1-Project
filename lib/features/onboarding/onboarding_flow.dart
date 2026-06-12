@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/models/sensor_status.dart';
 import '../../data/persistence/app_prefs.dart';
+import '../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../../services/voice/voice_controller.dart';
 import '../../widgets/aria_logo.dart';
@@ -14,8 +15,7 @@ import '../../widgets/body_view.dart';
 import '../../widgets/gradient_button.dart';
 import '../shell/main_shell.dart';
 
-/// First-run onboarding: Landing → How aria helps → About you → Connect sensors
-/// → Baseline walk → Home. Navigation is BUTTON-ONLY (no swipe) per the
+/// First-run onboarding. Navigation is BUTTON-ONLY (no swipe) per the
 /// no-fine-motor-gesture accessibility rule.
 class OnboardingFlow extends ConsumerStatefulWidget {
   const OnboardingFlow({super.key});
@@ -65,9 +65,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
   void _next() => setState(() => _step++);
 
   void _back() {
-    if (_step > 0) {
-      setState(() => _step--);
-    }
+    if (_step > 0) setState(() => _step--);
   }
 
   Future<void> _finish() async {
@@ -77,7 +75,6 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const MainShell()),
     );
-    // Start the voice agent now that we're on Home (it narrates from here).
     if (_speechAssist) {
       ref.read(voiceControllerProvider.notifier).enable();
     }
@@ -104,6 +101,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: AppTheme.pageBackground(
         child: SafeArea(
@@ -112,9 +110,12 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Header(step: _step, total: _steps, onBack: _step > 0 ? _back : null),
+                _Header(
+                    step: _step,
+                    total: _steps,
+                    onBack: _step > 0 ? _back : null),
                 const SizedBox(height: AppSpacing.lg),
-                Expanded(child: _buildStep()),
+                Expanded(child: _buildStep(l10n)),
               ],
             ),
           ),
@@ -123,78 +124,110 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
     );
   }
 
-  Widget _buildStep() => switch (_step) {
-        0 => _landing(),
-        1 => _howItHelps(),
-        2 => _aboutYou(),
-        3 => _connectSensors(),
-        _ => _baselineWalk(),
+  Widget _buildStep(AppLocalizations? l10n) => switch (_step) {
+        0 => _landing(l10n),
+        1 => _howItHelps(l10n),
+        2 => _aboutYou(l10n),
+        3 => _connectSensors(l10n),
+        _ => _baselineWalk(l10n),
       };
 
-  // 01 — Landing.
-  Widget _landing() {
+  // Step 0 — Landing.
+  Widget _landing(AppLocalizations? l10n) {
     return Column(
       children: [
         const Spacer(),
         const AriaLogo(size: 64, showWordmark: false),
         const SizedBox(height: AppSpacing.lg),
-        Text('aria', style: AppType.display.copyWith(fontSize: 48)),
+        // "aria" wordmark in Newsreader italic.
+        Text(
+          'aria',
+          style: AppType.displaySerif.copyWith(fontSize: 50),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: AppSpacing.xs),
-        Text("Keep your life's rhythm",
-            style: AppType.body, textAlign: TextAlign.center),
+        Text(
+          l10n?.tagline ?? "Keep your life's rhythm",
+          style: AppType.body.copyWith(
+              fontWeight: FontWeight.w500, color: AppColors.inkSoft),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: AppSpacing.xl),
-        _SpeechAssistToggle(
+        _SpeechAssistButton(
           value: _speechAssist,
-          onChanged: (v) {
-            setState(() => _speechAssist = v);
-            AppPrefs.setVoiceEnabled(v);
+          onTap: () {
+            setState(() => _speechAssist = !_speechAssist);
+            AppPrefs.setVoiceEnabled(!_speechAssist);
           },
         ),
         const Spacer(),
         GradientButton(
-            label: 'Get started', icon: Icons.arrow_forward_rounded, onPressed: _next),
+            label: l10n?.getStarted ?? 'Get started',
+            icon: Icons.arrow_forward_rounded,
+            onPressed: _next),
       ],
     );
   }
 
-  // 02 — How aria helps.
-  Widget _howItHelps() {
+  // Step 1 — How aria helps.
+  Widget _howItHelps(AppLocalizations? l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('How aria helps', style: AppType.h1),
+        Text(l10n?.howHelps ?? 'How aria helps', style: AppType.h1),
         const SizedBox(height: AppSpacing.lg),
-        const Expanded(
+        Expanded(
           child: Column(
             children: [
               _HelpPoint(
-                  icon: Icons.sensors,
-                  title: 'Senses your walk',
-                  body: 'Wearable sensors read your gait in real time.'),
-              SizedBox(height: AppSpacing.md),
+                icon: Icons.sensors,
+                title: l10n?.sensesWalk ?? 'Senses your walk',
+                body: 'Wearable sensors read your gait in real time.',
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF164D3C), Color(0xFF4E9A57)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
               _HelpPoint(
-                  icon: Icons.music_note,
-                  title: 'Plays a beat',
-                  body: 'A steady rhythm helps keep you moving smoothly.'),
-              SizedBox(height: AppSpacing.md),
+                icon: Icons.music_note,
+                title: l10n?.playsABeat ?? 'Plays a beat',
+                body: 'A steady rhythm helps keep you moving smoothly.',
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF8E3E48), Color(0xFFC4687A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
               _HelpPoint(
-                  icon: Icons.auto_awesome,
-                  title: 'Learns & adapts',
-                  body: 'aria senses when you need support and steps in to help.'),
+                icon: Icons.auto_awesome,
+                title: l10n?.learnsAdapts ?? 'Learns & adapts',
+                body: 'aria senses when you need support and steps in to help.',
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1F5C49), Color(0xFF6E978A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
             ],
           ),
         ),
-        GradientButton(label: 'Next', icon: Icons.arrow_forward_rounded, onPressed: _next),
+        GradientButton(
+            label: l10n?.next ?? 'Next',
+            icon: Icons.arrow_forward_rounded,
+            onPressed: _next),
       ],
     );
   }
 
-  // 03 — About you.
-  Widget _aboutYou() {
+  // Step 2 — About you.
+  Widget _aboutYou(AppLocalizations? l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('About you', style: AppType.h1),
+        Text(l10n?.aboutYou ?? 'About you', style: AppType.h1),
         const SizedBox(height: AppSpacing.md),
         Expanded(
           child: ListView(
@@ -207,19 +240,23 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                   label: 'Emergency contact — relationship',
                   controller: _contactType),
               _OnbField(
-                  label: 'Emergency contact — name', controller: _contactName),
+                  label: 'Emergency contact — name',
+                  controller: _contactName),
               _OnbField(
-                  label: 'Emergency contact — phone', controller: _contactPhone),
+                  label: 'Emergency contact — phone',
+                  controller: _contactPhone),
               const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  const Icon(Icons.lock_outline, size: 18, color: AppColors.label),
+                  const Icon(Icons.lock_outline,
+                      size: 18, color: AppColors.inkFaint),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'We ask for location only to share with your contact in an '
                       'emergency. Your data stays private.',
-                      style: AppType.label.copyWith(color: AppColors.label),
+                      style:
+                          AppType.label.copyWith(color: AppColors.inkFaint),
                     ),
                   ),
                 ],
@@ -228,20 +265,24 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        GradientButton(label: 'Continue', icon: Icons.arrow_forward_rounded, onPressed: _next),
+        GradientButton(
+            label: l10n?.continueBtn ?? 'Continue',
+            icon: Icons.arrow_forward_rounded,
+            onPressed: _next),
       ],
     );
   }
 
-  // 04 — Connect sensors.
-  Widget _connectSensors() {
+  // Step 3 — Connect sensors.
+  Widget _connectSensors(AppLocalizations? l10n) {
     final sensors = ref.watch(sensorSourceProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Connect sensors', style: AppType.h1),
+        Text(l10n?.connectSensors ?? 'Connect sensors', style: AppType.h1),
         const SizedBox(height: AppSpacing.xs),
-        Text('Place a sensor on your lower back and each ankle, then tap to pair.',
+        Text(
+            'Place a sensor on your lower back and each ankle, then tap to pair.',
             style: AppType.body),
         Expanded(
           child: StreamBuilder<SensorStatusMap>(
@@ -262,16 +303,19 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                       onPressed: () => sensors.connectAll(),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(52),
-                        side: const BorderSide(color: AppColors.primary, width: 1.5),
+                        side: const BorderSide(
+                            color: AppColors.primary, width: 1.5),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadii.pill)),
+                            borderRadius:
+                                BorderRadius.circular(AppRadii.pill)),
                       ),
-                      child: Text('Connect all',
-                          style: AppType.button.copyWith(color: AppColors.primary)),
+                      child: Text(l10n?.connectAll ?? 'Connect all',
+                          style: AppType.button
+                              .copyWith(color: AppColors.primary)),
                     )
                   else
                     GradientButton(
-                        label: 'Next',
+                        label: l10n?.next ?? 'Next',
                         icon: Icons.arrow_forward_rounded,
                         onPressed: _next),
                 ],
@@ -283,20 +327,26 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
     );
   }
 
-  // 05 — Baseline walk.
-  Widget _baselineWalk() {
+  // Step 4 — Baseline walk.
+  Widget _baselineWalk(AppLocalizations? l10n) {
     final progress = (_baselineSecs - _secsLeft) / _baselineSecs;
+    final elapsed = _baselineSecs - _secsLeft;
+    final elapsedMins = (elapsed ~/ 60).toString();
+    final elapsedSecs = (elapsed % 60).toString().padLeft(2, '0');
+    final totalMins = (_baselineSecs ~/ 60).toString();
+    final totalSecs = (_baselineSecs % 60).toString().padLeft(2, '0');
+
     final (label, onTap) = switch (_baseline) {
       _Baseline.idle => ('Start', _startBaseline),
       _Baseline.walking => ('Walking…', null),
-      _Baseline.done => ('Complete ✓', null),
+      _Baseline.done => ('Complete', null),
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Align(
           alignment: Alignment.centerLeft,
-          child: Text('Baseline walk', style: AppType.h1),
+          child: Text(l10n?.baselineWalk ?? 'Baseline walk', style: AppType.h1),
         ),
         const SizedBox(height: AppSpacing.xs),
         Text('Take a few steps so aria can learn your natural pace.',
@@ -315,26 +365,35 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                   value: _baseline == _Baseline.idle ? 0 : progress,
                   strokeWidth: 12,
                   backgroundColor: AppColors.surfaceDeep,
-                  valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                  valueColor:
+                      const AlwaysStoppedAnimation(AppColors.primary),
                 ),
               ),
-              Text(
-                _baseline == _Baseline.done ? '✓' : '$_secsLeft',
-                style: AppType.display.copyWith(fontSize: 64),
-              ),
+              if (_baseline == _Baseline.done)
+                const Icon(Icons.check_rounded,
+                    size: 56, color: AppColors.primary)
+              else
+                Text(
+                  '$elapsedMins:$elapsedSecs / $totalMins:$totalSecs',
+                  style: AppType.h2.copyWith(
+                      fontSize: 18, letterSpacing: -0.5),
+                ),
             ],
           ),
         ),
         const Spacer(),
         GradientButton(
-            label: label, icon: Icons.directions_walk, onPressed: onTap),
+            label: label,
+            icon: Icons.directions_walk,
+            onPressed: onTap),
       ],
     );
   }
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.step, required this.total, required this.onBack});
+  const _Header(
+      {required this.step, required this.total, required this.onBack});
   final int step;
   final int total;
   final VoidCallback? onBack;
@@ -356,7 +415,8 @@ class _Header extends StatelessWidget {
                 child: const SizedBox(
                     width: 48,
                     height: 48,
-                    child: Icon(Icons.arrow_back_rounded, color: AppColors.ink)),
+                    child:
+                        Icon(Icons.arrow_back_rounded, color: AppColors.ink)),
               ),
             ),
           ),
@@ -382,48 +442,91 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _SpeechAssistToggle extends StatelessWidget {
-  const _SpeechAssistToggle({required this.value, required this.onChanged});
+/// Full-width burgundy speech-assist button for the landing step.
+class _SpeechAssistButton extends StatelessWidget {
+  const _SpeechAssistButton({required this.value, required this.onTap});
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-      decoration: AppTheme.cardDecoration(radius: AppRadii.pill),
-      child: Row(
-        children: [
-          const Icon(Icons.mic_rounded, color: AppColors.primary),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Speech assist', style: AppType.h2.copyWith(fontSize: 17)),
-                Text('Hands-free voice mode', style: AppType.label),
-              ],
-            ),
+    final l10n = AppLocalizations.of(context);
+    return Semantics(
+      button: true,
+      label: 'Speech assist — hands-free voice mode',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 76),
+          decoration: BoxDecoration(
+            color: value ? AppColors.accent : AppColors.accentSoft,
+            borderRadius: BorderRadius.circular(AppRadii.lg),
           ),
-          Switch(
-            value: value,
-            activeThumbColor: AppColors.primary,
-            onChanged: onChanged,
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.20),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.mic_rounded,
+                  color: value ? Colors.white : AppColors.accent,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n?.speechAssist ?? 'Speech assist',
+                      style: AppType.h2.copyWith(
+                        fontSize: 17,
+                        color: value ? Colors.white : AppColors.accent,
+                      ),
+                    ),
+                    Text(
+                      l10n?.speechAssistSub ?? 'Hands-free voice mode',
+                      style: AppType.label.copyWith(
+                        color: value
+                            ? Colors.white.withValues(alpha: 0.75)
+                            : AppColors.inkSoft,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: value ? Colors.white : AppColors.accent,
+                size: 22,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
 class _HelpPoint extends StatelessWidget {
-  const _HelpPoint(
-      {required this.icon, required this.title, required this.body});
+  const _HelpPoint({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.gradient,
+  });
   final IconData icon;
   final String title;
   final String body;
+  final LinearGradient gradient;
 
   @override
   Widget build(BuildContext context) {
@@ -436,10 +539,10 @@ class _HelpPoint extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.14),
+              gradient: gradient,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppColors.primary, size: 26),
+            child: Icon(icon, color: Colors.white, size: 26),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -470,7 +573,8 @@ class _OnbField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppType.label.copyWith(color: AppColors.inkSoft)),
+          Text(label,
+              style: AppType.label.copyWith(color: AppColors.inkSoft)),
           const SizedBox(height: 4),
           TextField(
             controller: controller,
@@ -478,12 +582,21 @@ class _OnbField extends StatelessWidget {
             decoration: InputDecoration(
               isDense: true,
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: AppColors.field,
               contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md, vertical: 14),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadii.md),
+                borderRadius: BorderRadius.circular(11),
                 borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(11),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(11),
+                borderSide:
+                    const BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
           ),

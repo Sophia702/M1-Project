@@ -4,9 +4,6 @@ import '../a11y/a11y.dart';
 import 'tokens.dart';
 
 /// Light-only ThemeData built from [AppColors] / [AppType].
-///
-/// Kept thin on purpose — most surfaces are bespoke widgets that read tokens
-/// directly. This handles defaults (text, color scheme, min tap target).
 class AppTheme {
   AppTheme._();
 
@@ -14,7 +11,7 @@ class AppTheme {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       primary: AppColors.ink,
-      secondary: AppColors.plum,
+      secondary: AppColors.accent,
       surface: AppColors.card,
       brightness: Brightness.light,
     );
@@ -23,9 +20,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.bgTop,
-      // Bundled Lexend as the default family; inline/AppType styles inherit it.
       fontFamily: kFontFamily,
-      // Ensures interactive widgets honour the >=56dp tap target (A11y).
       materialTapTargetSize: MaterialTapTargetSize.padded,
       visualDensity: VisualDensity.standard,
       splashFactory: InkRipple.splashFactory,
@@ -37,7 +32,7 @@ class AppTheme {
     );
   }
 
-  /// A full-bleed gradient page background. Wrap screen bodies in this.
+  /// Full-bleed gradient page background.
   static Widget pageBackground({required Widget child, Gradient? gradient}) {
     return DecoratedBox(
       decoration: BoxDecoration(gradient: gradient ?? AppColors.pageGradient),
@@ -45,15 +40,14 @@ class AppTheme {
     );
   }
 
-  /// Standard white card container with the signature lift shadow.
+  /// White card with hairline border — flat paper aesthetic.
   static BoxDecoration cardDecoration({double radius = AppRadii.lg}) {
     return BoxDecoration(
       color: AppColors.card,
       borderRadius: BorderRadius.circular(radius),
-      boxShadow: AppShadows.card,
+      border: Border.all(color: AppColors.line, width: 1),
     );
   }
 
-  /// Minimum interactive size as a constraint (see [A11y.minTapTarget]).
   static const Size minButtonSize = Size(A11y.minTapTarget, A11y.minTapTarget);
 }

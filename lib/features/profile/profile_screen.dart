@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/gradient_button.dart';
 
 /// Screen 09 — Profile. Personal, medical, and emergency-contact info. The
@@ -66,33 +67,61 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md,
           AppSpacing.lg, AppSpacing.navClearance),
       children: [
-        Text('Profile', style: AppType.h1),
+        Text(l10n?.profile ?? 'Profile', style: AppType.h1),
         const SizedBox(height: AppSpacing.md),
-        _Section(title: 'Personal information', children: [
-          _Field(label: 'Name', controller: _c['name']!),
-          _Field(label: 'Age', controller: _c['age']!, number: true),
-        ]),
+        _Section(
+          title: l10n?.personalInfo ?? 'Personal information',
+          icon: Icons.person_rounded,
+          children: [
+            _Field(
+                label: l10n?.fieldName ?? 'Name', controller: _c['name']!),
+            _Field(
+                label: l10n?.fieldAge ?? 'Age',
+                controller: _c['age']!,
+                number: true),
+          ],
+        ),
         const SizedBox(height: AppSpacing.md),
-        _Section(title: 'Medical information', children: [
-          _Field(label: 'Medications', controller: _c['meds']!),
-          _Field(label: 'Assigned clinician', controller: _c['clinician']!),
-        ]),
+        _Section(
+          title: l10n?.medicalInfo ?? 'Medical information',
+          icon: Icons.local_hospital_rounded,
+          children: [
+            _Field(
+                label: l10n?.fieldMeds ?? 'Medications',
+                controller: _c['meds']!),
+            _Field(
+                label: l10n?.fieldClinician ?? 'Assigned clinician',
+                controller: _c['clinician']!),
+          ],
+        ),
         const SizedBox(height: AppSpacing.md),
-        _Section(title: 'Emergency contact', children: [
-          _Field(label: 'Relationship', controller: _c['contactType']!),
-          _Field(label: 'Name', controller: _c['contactName']!),
-          _Field(
-              label: 'Phone', controller: _c['contactPhone']!, number: true),
-        ]),
+        _Section(
+          title: l10n?.emergencyContact ?? 'Emergency contact',
+          icon: Icons.phone_android_rounded,
+          children: [
+            _Field(
+                label: l10n?.fieldRelationship ?? 'Relationship',
+                controller: _c['contactType']!),
+            _Field(
+                label: l10n?.fieldName ?? 'Name',
+                controller: _c['contactName']!),
+            _Field(
+                label: l10n?.fieldPhone ?? 'Phone',
+                controller: _c['contactPhone']!,
+                number: true),
+          ],
+        ),
         const SizedBox(height: AppSpacing.lg),
         GradientButton(
-          label: 'Save changes',
+          label: l10n?.saveChanges ?? 'Save changes',
           icon: Icons.check_rounded,
           onPressed: _dirty ? _save : null,
+          gradient: AppColors.pinkGradient,
         ),
       ],
     );
@@ -100,9 +129,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.children});
+  const _Section(
+      {required this.title, required this.children, this.icon});
   final String title;
   final List<Widget> children;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +143,14 @@ class _Section extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppType.label),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: AppType.label),
+              if (icon != null)
+                Icon(icon, size: 20, color: AppColors.inkFaint),
+            ],
+          ),
           const SizedBox(height: AppSpacing.sm),
           ...children,
         ],
@@ -145,12 +183,21 @@ class _Field extends StatelessWidget {
             decoration: InputDecoration(
               isDense: true,
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: AppColors.field,
               contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md, vertical: 14),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadii.md),
+                borderRadius: BorderRadius.circular(11),
                 borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(11),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(11),
+                borderSide:
+                    const BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
           ),

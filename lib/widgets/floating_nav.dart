@@ -1,7 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../core/a11y/a11y.dart';
 import '../core/theme/tokens.dart';
+import '../l10n/app_localizations.dart';
 
 /// Floating pill bottom navigation with a circular Start button docked into the
 /// bar. The bar has a CONCAVE NOTCH scooped out around the button, leaving a
@@ -28,6 +31,7 @@ class FloatingNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     const notchRadius = _btnSize / 2 + _ringGap;
     // Region tall enough for the part of the button that pops above the bar.
     const regionH = _barHeight + _btnSize / 2 - _overlapDown;
@@ -47,37 +51,52 @@ class FloatingNav extends StatelessWidget {
               bottom: 0,
               child: SizedBox(
                 height: _barHeight,
-                child: CustomPaint(
-                  painter: _NotchedBarPainter(
-                    notchCenterY: _overlapDown,
-                    notchRadius: notchRadius,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _NavItem(
-                          icon: Icons.home_rounded,
-                          label: 'Home',
-                          selected: index == 0,
-                          onTap: () => onSelect(0)),
-                      _NavItem(
-                          icon: Icons.insights_rounded,
-                          label: 'Progress',
-                          selected: index == 1,
-                          onTap: () => onSelect(1)),
-                      const SizedBox(width: _btnSize + 24), // clearance for the notch
-                      _NavItem(
-                          icon: Icons.person_rounded,
-                          label: 'Profile',
-                          selected: index == 2,
-                          onTap: () => onSelect(2)),
-                      _NavItem(
-                          icon: Icons.settings_rounded,
-                          label: 'Settings',
-                          selected: index == 3,
-                          onTap: () => onSelect(3)),
-                    ],
-                  ),
+                child: Stack(
+                  children: [
+                    // Frosted glass blur layer clipped to the pill shape.
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(_barHeight / 2),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                          child: const SizedBox.expand(),
+                        ),
+                      ),
+                    ),
+                    // Semi-transparent notched bar + nav items on top.
+                    CustomPaint(
+                      painter: _NotchedBarPainter(
+                        notchCenterY: _overlapDown,
+                        notchRadius: notchRadius,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _NavItem(
+                              icon: Icons.home_rounded,
+                              label: l10n?.navHome ?? 'Home',
+                              selected: index == 0,
+                              onTap: () => onSelect(0)),
+                          _NavItem(
+                              icon: Icons.insights_rounded,
+                              label: l10n?.navProgress ?? 'Progress',
+                              selected: index == 1,
+                              onTap: () => onSelect(1)),
+                          const SizedBox(width: _btnSize + 24),
+                          _NavItem(
+                              icon: Icons.person_rounded,
+                              label: l10n?.navProfile ?? 'Profile',
+                              selected: index == 2,
+                              onTap: () => onSelect(2)),
+                          _NavItem(
+                              icon: Icons.settings_rounded,
+                              label: l10n?.navSettings ?? 'Settings',
+                              selected: index == 3,
+                              onTap: () => onSelect(3)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -119,7 +138,7 @@ class _NotchedBarPainter extends CustomPainter {
 
     canvas.drawShadow(path, const Color(0x55394A40), 8, false);
     canvas.drawPath(path, Paint()
-      ..color = AppColors.card
+      ..color = AppColors.card.withValues(alpha: 0.82)
       ..isAntiAlias = true);
   }
 
@@ -143,7 +162,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.ink : AppColors.label;
+    final color = selected ? AppColors.primary : AppColors.label;
     return Semantics(
       button: true,
       selected: selected,
